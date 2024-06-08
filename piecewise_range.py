@@ -23,9 +23,9 @@ class PiecewiseRange:
 			return
 		max_index = length - 1
 		last_item = indexes[max_index]
-		rangeMax = last_item[1]
-		if min_value >= rangeMax:
-			if min_value <= rangeMax + 1: last_item[1] = max_value
+		range_max = last_item[1]
+		if min_value >= range_max:
+			if min_value <= range_max + 1: last_item[1] = max_value
 			else: indexes.append([min_value, max_value])
 			return
 		
