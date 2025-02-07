@@ -62,3 +62,5 @@ class Uint32ArrayMeta(TypedArrayMeta):
 	@property
 	def format(self): return self.__format
 class Uint32Array(TypedArray, metaclass=Uint32ArrayMeta): pass
+
+print(Uint32Array.format)
