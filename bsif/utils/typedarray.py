@@ -3,7 +3,7 @@ from math import sqrt
 from struct import calcsize, pack, pack_into, unpack, unpack_from
 from typing import Iterator, List, Tuple
 
-from abstractmeta import AbstractMeta, realabstractmethod
+from .abstractmeta import AbstractMeta, realabstractmethod
 
 def format_info(format: str):
 	byte_length = calcsize(format)
@@ -62,5 +62,3 @@ class Uint32ArrayMeta(TypedArrayMeta):
 	@property
 	def format(self): return self.__format
 class Uint32Array(TypedArray, metaclass=Uint32ArrayMeta): pass
-
-print(Uint32Array.format)
