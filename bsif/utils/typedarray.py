@@ -1,5 +1,5 @@
 from abc import ABC
-from math import sqrt
+from math import log2
 from struct import calcsize, pack, pack_into, unpack, unpack_from
 from typing import Iterator, List, Tuple
 
@@ -7,7 +7,7 @@ from .abstractmeta import AbstractMeta, realabstractmethod
 
 def format_info(format: str):
 	byte_length = calcsize(format)
-	return (format, int(sqrt(byte_length)), byte_length)
+	return (format, int(log2(byte_length)), byte_length)
 
 class TypedArrayMeta(ABC, AbstractMeta):
 	@property
@@ -35,7 +35,7 @@ class TypedArray(metaclass=TypedArrayMeta):
 		[format, _, _] = cls.format
 		if length < 0: raise ValueError("Argument 'length' must be non-negative.")
 		if not isinstance(iterator, Iterator): raise TypeError("Argument 'iterator' must be an iterator.")
-		return Uint32Array(pack(f"{length}{format}", *iterator))
+		return cls(pack(f"{length}{format}", *iterator))
 
 	@property
 	def is_readonly(self): return isinstance(self.__bytes, bytes)
@@ -55,10 +55,23 @@ class TypedArray(metaclass=TypedArrayMeta):
 		buffer = self.__bytes
 		[format, offset, _] = self.__class__.format
 		return unpack(f"{len(buffer) >> offset}{format}", buffer)
-	def __repr__(self): return f"{self.__class__.__name__}({len(self)})[{','.join(hex(num) for num in self.to_tuple())}]"
+	def __repr__(self):
+		length = len(self)
+		temp = []
+		if length > 10:
+			for i in range(10): temp.append(str(self[i]))
+			temp.append("...")
+		else:
+			for i in range(length): temp.append(str(self[i]))
+		return f"{self.__class__.__name__}({length})[{', '.join(temp)}]"
 
 class Uint32ArrayMeta(TypedArrayMeta):
 	__format = format_info("I")
 	@property
 	def format(self): return self.__format
 class Uint32Array(TypedArray, metaclass=Uint32ArrayMeta): pass
+class Float64ArrayMeta(TypedArrayMeta):
+	__format = format_info("d")
+	@property
+	def format(self): return self.__format
+class Float64Array(TypedArray, metaclass=Float64ArrayMeta): pass
