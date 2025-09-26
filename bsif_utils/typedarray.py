@@ -79,14 +79,14 @@ class TypedArray(metaclass=TypedArrayMeta):
 		return self.__buffer
 
 format_codes = { "i8": "b", "i16": "h", "i32": "i", "i64": "q", "f16": "e", "f32": "f", "f64": "d" }
-def gen_array_type(is_float_type: bool, is_signed: bool, endian: Literal[0,1,2], byte_length: int):
+def gen_array_type(is_float_type: bool, is_signed: bool, endianness: Literal[0,1,2], byte_length: int):
 	bit_length = byte_length << 3
 	format_code = format_codes[f"{"f" if is_float_type else "i"}{bit_length}"]
 	if not is_signed and not is_float_type: format_code = format_code.upper()
-	class_name = f"{"" if is_signed else "u"}{"float" if is_float_type else "int"}{bit_length}{("LE" if endian == 1 else "BE") if endian else ""}Array"
+	class_name = f"{"" if is_signed else "u"}{"float" if is_float_type else "int"}{bit_length}{("LE" if endianness == 1 else "BE") if endianness else ""}Array"
 	class_name = class_name[0].upper() + class_name[1:]
-	if endian and byte_length != 1:
-		format_code = ("<" if endian == 1 else ">") + format_code
+	if endianness and byte_length != 1:
+		format_code = ("<" if endianness == 1 else ">") + format_code
 	class meta(TypedArrayMeta):
 		__format = format_info(format_code)
 		@property
@@ -97,32 +97,16 @@ def gen_array_type(is_float_type: bool, is_signed: bool, endian: Literal[0,1,2],
 
 global_this = globals()
 formats = [
-	(False, True, 0, 1),
 	(False, False, 0, 1),
+	(False, True, 0, 1),
 	(False, False, 0, 2),
-	(False, False, 1, 2),
-	(False, False, 2, 2),
 	(False, True, 0, 2),
-	(False, True, 1, 2),
-	(False, True, 2, 2),
 	(False, False, 0, 4),
-	(False, False, 1, 4),
-	(False, False, 2, 4),
 	(False, True, 0, 4),
-	(False, True, 1, 4),
-	(False, True, 2, 4),
 	(False, False, 0, 8),
-	(False, False, 1, 8),
-	(False, False, 2, 8),
 	(False, True, 0, 8),
-	(False, True, 1, 8),
-	(False, True, 2, 8),
 	(True, True, 0, 4),
-	(True, True, 1, 4),
-	(True, True, 2, 4),
-	(True, True, 0, 8),
-	(True, True, 1, 8),
-	(True, True, 2, 8)
+	(True, True, 0, 8)
 ]
 for item in formats:
 	array_type = gen_array_type(*item) # type: ignore
