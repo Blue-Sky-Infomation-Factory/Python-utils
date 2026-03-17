@@ -87,7 +87,7 @@ def gen_array_type(is_float_type: bool, is_signed: bool, endianness: Literal[0,1
 	bit_length = byte_length << 3
 	format_code = format_codes[f"{"f" if is_float_type else "i"}{bit_length}"]
 	if not is_signed and not is_float_type: format_code = format_code.upper()
-	class_name = f"{"" if is_signed else "u"}{"float" if is_float_type else "int"}{bit_length}{("LE" if endianness == 1 else "BE") if endianness else ""}Array"
+	class_name = f"{"" if is_signed or is_float_type else "u"}{"float" if is_float_type else "int"}{bit_length}{("LE" if endianness == 1 else "BE") if endianness else ""}Array"
 	class_name = class_name[0].upper() + class_name[1:]
 	if endianness and byte_length != 1:
 		format_code = ("<" if endianness == 1 else ">") + format_code
