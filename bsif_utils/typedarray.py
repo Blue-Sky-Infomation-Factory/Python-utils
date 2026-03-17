@@ -18,9 +18,10 @@ class TypedArrayMeta(ABC, AbstractMeta):
 	def format(self) -> Tuple[str, int, int]: ...
 class TypedArray(metaclass=TypedArrayMeta):
 	def __init__(self, buffer: bytearray | bytes | int | List | Tuple | array | memoryview | SharedMemory) -> None:
-		[format, offset, byte_length] = self.__class__.format
+		[format, shift, byte_length] = self.__class__.format
 		if isinstance(buffer, memoryview):
 			if buffer.nbytes % byte_length: raise ValueError(f"The length in bytes of buffer must be a multiple of {byte_length}.")
+			if not buffer.c_contiguous: raise ValueError("The buffer must be C contiguous.")
 			self.__buffer = buffer
 		elif isinstance(buffer, SharedMemory):
 			temp = buffer.buf
@@ -34,15 +35,15 @@ class TypedArray(metaclass=TypedArrayMeta):
 			if buffer.itemsize != byte_length: raise ValueError(f"The itemsize of array must be {byte_length}.")
 			self.__buffer = memoryview(buffer)
 		elif isinstance(buffer, int):
-			self.__buffer = memoryview(bytearray(buffer << offset))
+			self.__buffer = memoryview(bytearray(buffer << shift))
 		elif isinstance(buffer, (list, tuple)):
 			self.__buffer = memoryview(pack(f"{len(buffer)}{format}", *buffer))
 		else: raise TypeError("Argument 'buffer' must be one of the following types: (bytearray | bytes | int | List | Tuple | array | memoryview | SharedMemory).")
 
 	def __init_subclass__(cls):
-		[format, offset, _] = cls.format
-		cls.__getitem__ = lambda self, index: unpack_from(format, self.__buffer, index << offset)[0]
-		cls.__setitem__ = lambda self, index, value: pack_into(format, self.__buffer, index << offset, value)
+		[format, shift, _] = cls.format
+		cls.__getitem__ = lambda self, index: unpack_from(format, self.__buffer, index << shift)[0]
+		cls.__setitem__ = lambda self, index, value: pack_into(format, self.__buffer, index << shift, value)
 
 	@classmethod
 	def from_iterator(cls, length: int, iterator: Iterator):
@@ -57,18 +58,18 @@ class TypedArray(metaclass=TypedArrayMeta):
 	def byte_length(self): return self.__buffer.nbytes
 	
 	def __getitem__(self, index: int):
-		[format, offset, _] = self.__class__.format
-		return unpack_from(format, self.__buffer, index << offset)[0]
+		[format, shift, _] = self.__class__.format
+		return unpack_from(format, self.__buffer, index << shift)[0]
 	def __setitem__(self, index: int, value: int | float):
-		[format, offset, _] = self.__class__.format
-		pack_into(format, self.__buffer, index << offset, value)
+		[format, shift, _] = self.__class__.format
+		pack_into(format, self.__buffer, index << shift, value)
 	def __iter__(self):
 		for i in range(len(self)): yield self[i]
 	def __len__(self): return self.__buffer.nbytes >> self.__class__.format[1]
 	def to_tuple(self):
 		buffer = self.__buffer
-		[format, offset, _] = self.__class__.format
-		return unpack(f"{buffer.nbytes >> offset}{format}", buffer)
+		[format, shift, _] = self.__class__.format
+		return unpack(f"{buffer.nbytes >> shift}{format}", buffer)
 	def __repr__(self):
 		length = len(self)
 		temp = []

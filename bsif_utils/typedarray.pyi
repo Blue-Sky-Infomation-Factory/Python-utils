@@ -13,7 +13,7 @@ def format_info(format_code: str) -> Tuple[str, int, int]:
 class TypedArrayMeta(ABC, AbstractMeta):
 	@property
 	def format(self) -> Tuple[str, int, int]:
-		"""[0]: struct format code ; [1]: offset of item index to address ; [2]: item size in bytes"""
+		"""[0]: struct format code ; [1]: shift of item index to address ; [2]: item size in bytes"""
 
 class TypedArray(ABC, metaclass=TypedArrayMeta):
 	"""Base class.
