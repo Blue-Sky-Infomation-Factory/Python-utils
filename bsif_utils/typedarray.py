@@ -19,10 +19,14 @@ class TypedArrayMeta(ABC, AbstractMeta):
 class TypedArray(metaclass=TypedArrayMeta):
 	def __init__(self, buffer: bytearray | bytes | int | List | Tuple | array | memoryview | SharedMemory) -> None:
 		[format, offset, byte_length] = self.__class__.format
-		if isinstance(buffer, (memoryview, SharedMemory)):
-			if isinstance(buffer, SharedMemory): buffer = buffer.buf
+		if isinstance(buffer, memoryview):
 			if buffer.nbytes % byte_length: raise ValueError(f"The length in bytes of buffer must be a multiple of {byte_length}.")
 			self.__buffer = buffer
+		elif isinstance(buffer, SharedMemory):
+			temp = buffer.buf
+			if not temp: raise ValueError("Cannot get buffer from SharedMemory.")
+			if temp.nbytes % byte_length: raise ValueError(f"The length in bytes of buffer must be a multiple of {byte_length}.")
+			self.__buffer = temp
 		elif isinstance(buffer, (bytearray, bytes)):
 			if len(buffer) % byte_length: raise ValueError(f"The length in bytes of buffer must be a multiple of {byte_length}.")
 			self.__buffer = memoryview(buffer)

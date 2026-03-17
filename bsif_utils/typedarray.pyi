@@ -17,10 +17,15 @@ class TypedArrayMeta(ABC, AbstractMeta):
 
 class TypedArray(ABC, metaclass=TypedArrayMeta):
 	"""Base class.
-	
-	This class implemented all methods already without the format in meta.
-	
-	If you want to create a type by yourself, all you need to do is implement a TypedArrayMeta with format and create a class like `class Formatted(TypedArray, metaclass=meta)`."""
+
+	TypedArray is designed to make up for the lack of byte-order–specific views in Python.
+
+	This class has implemented all methods, except for the format in its metaclass.
+
+	This module already provides several TypedArray types. If the data type you need is not included, you can generate your own using `gen_array_type()`.
+
+	If you want to manually create a TypedArray type, you only need to implement a TypedArrayMeta with a format, and then define a class like this:
+	```class Formatted(TypedArray, metaclass=meta): ..."""
 	def __init__(
 		self,
 		buffer: (
